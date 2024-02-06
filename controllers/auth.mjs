@@ -1,11 +1,11 @@
-const { validationResult } = require('express-validator/check');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import validator from 'express-validator/check/index.js';
+import bcryptjs from 'bcryptjs';
+import jsonwebtoken from 'jsonwebtoken';
 
-const User = require('../models/user');
+import User from '../models/user.mjs';
 
-exports.signup = async (req, res, next) => {
-  const errors = validationResult(req);
+export async function signup(req, res, next) {
+  const errors = validator(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed.');
     error.statusCode = 422;
@@ -16,7 +16,7 @@ exports.signup = async (req, res, next) => {
   const name = req.body.name;
   const password = req.body.password;
   try {
-    const hashedPw = await bcrypt.hash(password, 12);
+    const hashedPw = await bcryptjs.hash(password, 12);
 
     const user = new User({
       email: email,
@@ -31,9 +31,9 @@ exports.signup = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
-exports.login = async (req, res, next) => {
+export async function login(req, res, next) {
   const email = req.body.email;
   const password = req.body.password;
   let loadedUser;
@@ -45,13 +45,13 @@ exports.login = async (req, res, next) => {
       throw error;
     }
     loadedUser = user;
-    const isEqual = await bcrypt.compare(password, user.password);
+    const isEqual = await bcryptjs.compare(password, user.password);
     if (!isEqual) {
       const error = new Error('Wrong password!');
       error.statusCode = 401;
       throw error;
     }
-    const token = jwt.sign(
+    const token = jsonwebtoken.sign(
       {
         email: loadedUser.email,
         userId: loadedUser._id.toString()
@@ -60,18 +60,21 @@ exports.login = async (req, res, next) => {
       { expiresIn: '1h' }
     );
     res.status(200).json({ token: token, userId: loadedUser._id.toString() });
+    return;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
+    return err;
   }
-};
+}
 
-exports.getUserStatus = async (req, res, next) => {
+export async function getUserStatus(req, res, next) {
   try {
     const user = await User.findById(req.userId);
     if (!user) {
+      console.log("user not found")
       const error = new Error('User not found.');
       error.statusCode = 404;
       throw error;
@@ -83,9 +86,9 @@ exports.getUserStatus = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
-exports.updateUserStatus = async (req, res, next) => {
+export async function updateUserStatus(req, res, next) {
   const newStatus = req.body.status;
   try {
     const user = await User.findById(req.userId);
@@ -103,4 +106,4 @@ exports.updateUserStatus = async (req, res, next) => {
     }
     next(err);
   }
-};
+}

@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const { validationResult } = require('express-validator/check');
+import validator from 'express-validator/check/index.js';
 
-const Post = require('../models/post');
-const User = require('../models/user');
+import Post from '../models/post.mjs';
+import User from '../models/user.mjs';
 
 exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -29,7 +29,7 @@ exports.getPosts = async (req, res, next) => {
 };
 
 exports.createPost = async (req, res, next) => {
-  const errors = validationResult(req);
+  const errors = validator(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect.');
     error.statusCode = 422;
@@ -87,7 +87,7 @@ exports.getPost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
   const postId = req.params.postId;
-  const errors = validationResult(req);
+  const errors = validator(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect.');
     error.statusCode = 422;
