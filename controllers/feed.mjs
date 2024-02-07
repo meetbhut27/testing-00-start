@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import validator from 'express-validator/check/index.js';
+import  validationResult  from 'express-validator/check/index.js';
 
 import Post from '../models/post.mjs';
 import User from '../models/user.mjs';
 
-exports.getPosts = async (req, res, next) => {
+export async function getPosts(req, res, next) {
   const currentPage = req.query.page || 1;
   const perPage = 2;
   try {
@@ -26,15 +26,15 @@ exports.getPosts = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
-exports.createPost = async (req, res, next) => {
-  const errors = validator(req);
-  if (!errors.isEmpty()) {
-    const error = new Error('Validation failed, entered data is incorrect.');
-    error.statusCode = 422;
-    throw error;
-  }
+export async function createPost(req, res, next) {
+  // const errors = validationResult(req);
+  // if (!errors.isEmpty()) {
+  //   const error = new Error('Validation failed, entered data is incorrect.');
+  //   error.statusCode = 422;
+  //   throw error;
+  // }
   if (!req.file) {
     const error = new Error('No image provided.');
     error.statusCode = 422;
@@ -53,21 +53,23 @@ exports.createPost = async (req, res, next) => {
     await post.save();
     const user = await User.findById(req.userId);
     user.posts.push(post);
+    const savedUser = user;
     await user.save();
     res.status(201).json({
       message: 'Post created successfully!',
       post: post,
       creator: { _id: user._id, name: user.name }
     });
+    return savedUser;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
   }
-};
+}
 
-exports.getPost = async (req, res, next) => {
+export async function getPost(req, res, next) {
   const postId = req.params.postId;
   const post = await Post.findById(postId);
   try {
@@ -83,11 +85,11 @@ exports.getPost = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
-exports.updatePost = async (req, res, next) => {
+export async function updatePost(req, res, next) {
   const postId = req.params.postId;
-  const errors = validator(req);
+  const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect.');
     error.statusCode = 422;
@@ -130,9 +132,9 @@ exports.updatePost = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
-exports.deletePost = async (req, res, next) => {
+export async function deletePost(req, res, next) {
   const postId = req.params.postId;
   try {
     const post = await Post.findById(postId);
@@ -162,9 +164,9 @@ exports.deletePost = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
 const clearImage = filePath => {
-  filePath = path.join(__dirname, '..', filePath);
-  fs.unlink(filePath, err => console.log(err));
+  filePath = join(__dirname, '..', filePath);
+  unlink(filePath, err => console.log(err));
 };

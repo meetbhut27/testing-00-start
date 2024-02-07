@@ -24,14 +24,6 @@ describe('Auth Controller - Login', function() {
         })
     })
 
-    beforeEach(function(){
-        
-    })
-
-    afterEach(function(){
-
-    })
-
     it('should throw an error with code 500 if acccesing the database fails', function(done) {
         sinon.stub(User, 'findOne');
         User.findOne.throws()
